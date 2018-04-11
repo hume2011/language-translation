@@ -3,19 +3,16 @@
 
 # # 语言翻译
 # 
-# 在此项目中，你将了解神经网络机器翻译这一领域。你将用由英语和法语语句组成的数据集，训练一个序列到序列模型（sequence to sequence model），该模型能够将新的英语句子翻译成法语。
+# 在此项目将用由英语和法语语句组成的数据集，训练一个序列到序列模型（sequence to sequence model），该模型能够将新的英语句子翻译成法语。
 # 
 # ## 获取数据
 # 
-# 因为将整个英语语言内容翻译成法语需要大量训练时间，所以我们提供了一小部分的英语语料库。
+# 因为将整个英语语言内容翻译成法语需要大量训练时间，所以数据集采用了一小部分的英语语料库。
 # 
 
 # In[1]:
 
 
-"""
-DON'T MODIFY ANYTHING IN THIS CELL
-"""
 import helper
 import problem_unittests as tests
 
@@ -27,7 +24,7 @@ target_text = helper.load_data(target_path)
 
 # ## 探索数据
 # 
-# 研究 view_sentence_range，查看并熟悉该数据的不同部分。
+# 查看并熟悉该数据的不同部分。
 # 
 
 # In[2]:
@@ -35,9 +32,7 @@ target_text = helper.load_data(target_path)
 
 view_sentence_range = (0, 10)
 
-"""
-DON'T MODIFY ANYTHING IN THIS CELL
-"""
+
 import numpy as np
 print('Dataset Stats')
 print('Roughly the number of unique words: {}'.format(len({word: None for word in source_text.split()})))
@@ -60,16 +55,16 @@ print('\n'.join(target_text.split('\n')[view_sentence_range[0]:view_sentence_ran
 # 
 # ### 文本到单词 id
 # 
-# 和之前的 RNN 一样，你必须首先将文本转换为数字，这样计算机才能读懂。在函数 `text_to_ids()` 中，你需要将单词中的 `source_text` 和 `target_text` 转为 id。但是，你需要在 `target_text` 中每个句子的末尾，添加 `<EOS>` 单词 id。这样可以帮助神经网络预测句子应该在什么地方结束。
+# 首先将文本转换为数字，这样计算机才能读懂。在函数 `text_to_ids()` 中，你需要将单词中的 `source_text` 和 `target_text` 转为 id。在 `target_text` 中每个句子的末尾，添加 `<EOS>` 单词 id。这样可以帮助神经网络预测句子应该在什么地方结束。
 # 
 # 
-# 你可以通过以下代码获取  `<EOS> ` 单词ID：
+# 可以通过以下代码获取  `<EOS> ` 单词ID：
 # 
 # ```python
 # target_vocab_to_int['<EOS>']
 # ```
 # 
-# 你可以使用 `source_vocab_to_int` 和 `target_vocab_to_int` 获得其他单词 id。
+# 使用 `source_vocab_to_int` 和 `target_vocab_to_int` 获得其他单词 id。
 # 
 
 # In[3]:
@@ -84,7 +79,6 @@ def text_to_ids(source_text, target_text, source_vocab_to_int, target_vocab_to_i
     :param target_vocab_to_int: Dictionary to go from the target words to an id
     :return: A tuple of lists (source_id_text, target_id_text)
     """
-    # TODO: Implement Function
     source_id_text = [[source_vocab_to_int.get(word, target_vocab_to_int['<UNK>']) for word in line.split(' ')] for line in source_text.split('\n')]
     target_id_text = [[target_vocab_to_int.get(word, target_vocab_to_int['<UNK>']) for word in line.split(' ')] + [target_vocab_to_int['<EOS>']] for line in target_text.split('\n')]
     return source_id_text, target_id_text
@@ -103,22 +97,14 @@ tests.test_text_to_ids(text_to_ids)
 # In[4]:
 
 
-"""
-DON'T MODIFY ANYTHING IN THIS CELL
-"""
 helper.preprocess_and_save_data(source_path, target_path, text_to_ids)
 
 
 # # 检查点
-# 
-# 这是你的第一个检查点。如果你什么时候决定再回到该记事本，或需要重新启动该记事本，可以从这里继续。预处理的数据已保存到磁盘上。
 
 # In[5]:
 
 
-"""
-DON'T MODIFY ANYTHING IN THIS CELL
-"""
 import numpy as np
 import helper
 
@@ -127,15 +113,12 @@ import helper
 
 # ### 检查 TensorFlow 版本，确认可访问 GPU
 # 
-# 这一检查步骤，可以确保你使用的是正确版本的 TensorFlow，并且能够访问 GPU。
+# 确保你使用的是正确版本的 TensorFlow，并且能够访问 GPU。
 # 
 
 # In[6]:
 
 
-"""
-DON'T MODIFY ANYTHING IN THIS CELL
-"""
 from distutils.version import LooseVersion
 import warnings
 import tensorflow as tf
@@ -153,7 +136,7 @@ else:
 
 # ## 构建神经网络
 # 
-# 你将通过实现以下函数，构建出要构建一个序列到序列模型所需的组件：
+# 通过实现以下函数，构建出一个序列到序列模型所需的组件：
 # 
 # - `model_inputs`
 # - `process_decoding_input`
@@ -183,7 +166,7 @@ def model_inputs():
     Create TF Placeholders for input, targets, and learning rate.
     :return: Tuple (input, targets, learning rate, keep probability)
     """
-    # TODO: Implement Function
+    
     inputs = tf.placeholder(tf.int32, [None,None], name='input')
     targets = tf.placeholder(tf.int32, [None,None], name='target')
     learning_rate = tf.placeholder(tf.float32, name='learning_rate')
@@ -211,7 +194,7 @@ def process_decoding_input(target_data, target_vocab_to_int, batch_size):
     :param batch_size: Batch Size
     :return: Preprocessed target data
     """
-    # TODO: Implement Function
+   
     sliced_data = tf.strided_slice(target_data,[0,0],[batch_size,-1],[1,1])
     prep_target_data = tf.concat([tf.fill([batch_size,1],target_vocab_to_int['<GO>']),sliced_data],1)
     return prep_target_data
@@ -238,7 +221,6 @@ def encoding_layer(rnn_inputs, rnn_size, num_layers, keep_prob):
     :param keep_prob: Dropout keep probability
     :return: RNN state
     """
-    # TODO: Implement Function
     # Encoder embedding
     # 首先创建多层lstm
     enc_cell = tf.contrib.rnn.MultiRNNCell([tf.contrib.rnn.BasicLSTMCell(rnn_size)] * num_layers)
@@ -275,7 +257,7 @@ def decoding_layer_train(encoder_state, dec_cell, dec_embed_input, sequence_leng
     :param keep_prob: Dropout keep probability
     :return: Train Logits
     """
-    # TODO: Implement Function
+    
     train_decoder_fn = tf.contrib.seq2seq.simple_decoder_fn_train(encoder_state)
     train_pred, _, _ = tf.contrib.seq2seq.dynamic_rnn_decoder(
         dec_cell, train_decoder_fn, dec_embed_input, sequence_length, scope=decoding_scope)
@@ -315,7 +297,7 @@ def decoding_layer_infer(encoder_state, dec_cell, dec_embeddings, start_of_seque
     :param keep_prob: Dropout keep probability
     :return: Inference Logits
     """
-    # TODO: Implement Function
+    
     infer_decoder_fn = tf.contrib.seq2seq.simple_decoder_fn_inference(
         output_fn, encoder_state, dec_embeddings, start_of_sequence_id, end_of_sequence_id, 
         maximum_length, vocab_size)
@@ -340,7 +322,7 @@ tests.test_decoding_layer_infer(decoding_layer_infer)
 # - 使用 `decoding_layer_train(encoder_state, dec_cell, dec_embed_input, sequence_length, decoding_scope, output_fn, keep_prob)` 函数获取训练分对数。
 # - 使用 `decoding_layer_infer(encoder_state, dec_cell, dec_embeddings, start_of_sequence_id, end_of_sequence_id, maximum_length, vocab_size, decoding_scope, output_fn, keep_prob)` 函数获取推论分对数。
 # 
-# 注意：你将需要使用 [tf.variable_scope](https://www.tensorflow.org/api_docs/python/tf/variable_scope) 在训练和推论分对数间分享变量。
+# 注意：需要使用 [tf.variable_scope](https://www.tensorflow.org/api_docs/python/tf/variable_scope) 在训练和推论分对数间分享变量。
 
 # In[12]:
 
@@ -360,7 +342,6 @@ def decoding_layer(dec_embed_input, dec_embeddings, encoder_state, vocab_size, s
     :param keep_prob: Dropout keep probability
     :return: Tuple of (Training Logits, Inference Logits)
     """
-    # TODO: Implement Function
     # Decoder RNNs
     # 多层lstm
     dec_cell = tf.contrib.rnn.MultiRNNCell([tf.contrib.rnn.BasicLSTMCell(rnn_size)] * num_layers)
@@ -416,7 +397,7 @@ def seq2seq_model(input_data, target_data, keep_prob, batch_size, sequence_lengt
     :param target_vocab_to_int: Dictionary to go from the target words to an id
     :return: Tuple of (Training Logits, Inference Logits)
     """
-    # TODO: Implement Function
+    
     enc_embed_input = tf.contrib.layers.embed_sequence(input_data, source_vocab_size, enc_embedding_size)
     encoder_state = encoding_layer(enc_embed_input, rnn_size, num_layers, keep_prob)
     target_data = process_decoding_input(target_data, target_vocab_to_int, batch_size)
@@ -467,9 +448,9 @@ learning_rate = 0.001
 keep_probability = 0.6
 
 
-# ### 构建图表
+# ### 构建Gragh
 # 
-# 使用你实现的神经网络构建图表。
+# 使用s上面实现的神经网络构建图表。
 
 # In[15]:
 
@@ -510,14 +491,11 @@ with train_graph.as_default():
 
 # ### 训练
 # 
-# 利用预处理的数据训练神经网络。如果很难获得低损失值，请访问我们的论坛，看看其他人是否遇到了相同的问题。
+# 利用预处理的数据训练神经网络。
 
 # In[16]:
 
 
-"""
-DON'T MODIFY ANYTHING IN THIS CELL
-"""
 import time
 
 def get_accuracy(target, logits):
@@ -586,9 +564,6 @@ with tf.Session(graph=train_graph) as sess:
 # In[17]:
 
 
-"""
-DON'T MODIFY ANYTHING IN THIS CELL
-"""
 # Save parameters for checkpoint
 helper.save_params(save_path)
 
@@ -598,9 +573,6 @@ helper.save_params(save_path)
 # In[18]:
 
 
-"""
-DON'T MODIFY ANYTHING IN THIS CELL
-"""
 import tensorflow as tf
 import numpy as np
 import helper
@@ -612,7 +584,7 @@ load_path = helper.load_params()
 
 # ## 句子到序列
 # 
-# 要向模型提供要翻译的句子，你首先需要预处理该句子。实现函数 `sentence_to_seq()` 以预处理新的句子。
+# 要向模型提供要翻译的句子，首先需要预处理该句子。实现函数 `sentence_to_seq()` 以预处理新的句子。
 # 
 # - 将句子转换为小写形式
 # - 使用 `vocab_to_int` 将单词转换为 id
@@ -628,7 +600,7 @@ def sentence_to_seq(sentence, vocab_to_int):
     :param vocab_to_int: Dictionary to go from the words to an id
     :return: List of word ids
     """
-    # TODO: Implement Function
+
     sentence = sentence.lower()
     ids = [vocab_to_int.get(word, target_vocab_to_int['<UNK>']) for word in sentence.split(' ')]
     return ids
@@ -678,12 +650,10 @@ print('  French Words: {}'.format([target_int_to_vocab[i] for i in np.argmax(tra
 
 # ## 不完美的翻译
 # 
-# 你可能注意到了，某些句子的翻译质量比其他的要好。因为你使用的数据集只有 227 个英语单词，但实际生活中有数千个单词，只有使用这些单词的句子结果才会比较理想。对于此项目，不需要达到完美的翻译。但是，如果你想创建更好的翻译模型，则需要更好的数据。
-# 
-# 你可以使用 [WMT10 French-English corpus](http://www.statmt.org/wmt10/training-giga-fren.tar) 语料库训练模型。该数据集拥有更多的词汇，讨论的话题也更丰富。但是，训练时间要好多天的时间，所以确保你有 GPU 并且对于我们提供的数据集，你的神经网络性能很棒。提交此项目后，别忘了研究下 WMT10 语料库。
-# 
-# 
-# ## 提交项目
-# 
-# 提交项目时，确保先运行所有单元，然后再保存记事本。保存记事本文件为 “dlnd_language_translation.ipynb”，再通过菜单中的“文件” ->“下载为”将其另存为 HTML 格式。提交的项目文档中需包含“helper.py”和“problem_unittests.py”文件。
-# 
+# 某些句子的翻译质量比其他的要好，因为该项目使用的数据集只有 227 个英语单词，但实际生活中有数千个单词，只有使用这些单词的句子结果才会比较理想。也可以使用 [WMT10 French-English corpus](http://www.statmt.org/wmt10/training-giga-fren.tar) 语料库训练模型。该数据集拥有更多的词汇，讨论的话题也更丰富。但是，训练时间要好多天的时间。
+
+# In[ ]:
+
+
+
+
